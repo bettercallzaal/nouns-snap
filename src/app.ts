@@ -26,7 +26,7 @@ function getBaseUrl(req: Request): string {
 
 registerSnapHandler(app, async (ctx) => {
   const baseUrl = getBaseUrl(ctx.request);
-  const totalSupply = await getTotalSupply();
+  const totalSupply = getTotalSupply();
   return buildInputPage(baseUrl, totalSupply);
 }, skipJFS);
 
@@ -38,7 +38,7 @@ registerSnapHandler(
     const baseUrl = getBaseUrl(ctx.request);
 
     if (ctx.action.type === 'get') {
-      const totalSupply = await getTotalSupply();
+      const totalSupply = getTotalSupply();
       return buildInputPage(baseUrl, totalSupply);
     }
 
@@ -46,7 +46,7 @@ registerSnapHandler(
     const tokenId = parseInt(tokenIdStr, 10);
 
     if (isNaN(tokenId) || tokenId < 0) {
-      const totalSupply = await getTotalSupply();
+      const totalSupply = getTotalSupply();
       return buildInputPage(baseUrl, totalSupply);
     }
 
@@ -66,7 +66,7 @@ registerSnapHandler(
   app,
   async (ctx) => {
     const baseUrl = getBaseUrl(ctx.request);
-    const totalSupply = await getTotalSupply();
+    const totalSupply = getTotalSupply();
     const tokenId = Math.floor(Math.random() * totalSupply);
 
     const [owner, imageUrl] = await Promise.all([

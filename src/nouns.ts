@@ -13,20 +13,14 @@ const nounsAbi = parseAbi([
 
 const client = createPublicClient({
   chain: mainnet,
-  transport: http(),
+  transport: http('https://eth.merkle.io', { timeout: 5_000 }),
 });
 
-export async function getTotalSupply(): Promise<number> {
-  try {
-    const supply = await client.readContract({
-      address: NOUNS.address,
-      abi: nounsAbi,
-      functionName: 'totalSupply',
-    });
-    return Number(supply);
-  } catch {
-    return 1300; // fallback approximate
-  }
+// Hardcode supply - updates daily, no need to hit RPC on every page load
+const KNOWN_SUPPLY = 1869;
+
+export function getTotalSupply(): number {
+  return KNOWN_SUPPLY;
 }
 
 export async function getNounOwner(tokenId: number): Promise<string> {
