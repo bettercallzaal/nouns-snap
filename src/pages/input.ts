@@ -8,7 +8,7 @@ export function buildInputPage(baseUrl: string, totalSupply: number) {
         page: {
           type: 'stack' as const,
           props: { direction: 'vertical' as const, gap: 'md' as const },
-          children: ['title', 'desc', 'token_input', 'btn_row'],
+          children: ['title', 'desc', 'token_input', 'btn_row', 'btn_row_2'],
         },
         title: {
           type: 'text' as const,
@@ -44,6 +44,41 @@ export function buildInputPage(baseUrl: string, totalSupply: number) {
             press: {
               action: 'submit' as const,
               params: { target: `${baseUrl}/random` },
+            },
+          },
+        },
+        btn_row_2: {
+          type: 'stack' as const,
+          props: { direction: 'horizontal' as const, gap: 'sm' as const },
+          children: ['auction_btn', 'avatar_btn', 'zounz_btn'],
+        },
+        auction_btn: {
+          type: 'button' as const,
+          props: { label: 'Live Auction', icon: 'flame' as const },
+          on: {
+            press: {
+              action: 'submit' as const,
+              params: { target: `${baseUrl}/auction` },
+            },
+          },
+        },
+        avatar_btn: {
+          type: 'button' as const,
+          props: { label: 'Avatar', icon: 'user' as const },
+          on: {
+            press: {
+              action: 'submit' as const,
+              params: { target: `${baseUrl}/avatar-input` },
+            },
+          },
+        },
+        zounz_btn: {
+          type: 'button' as const,
+          props: { label: 'ZOUNZ DAO', icon: 'external-link' as const },
+          on: {
+            press: {
+              action: 'open_url' as const,
+              params: { target: 'https://nouns.build/dao/base/0xCB80Ef04DA68667c9a4450013BDD69269842c883' },
             },
           },
         },

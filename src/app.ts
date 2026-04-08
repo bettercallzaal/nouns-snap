@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { registerSnapHandler } from '@farcaster/snap-hono';
-import { getTotalSupply, getNounOwner, getNounImageUrl } from './nouns.js';
+import { getTotalSupply, getNounOwner, getNounImageUrl, getCurrentAuction } from './nouns.js';
 import { buildInputPage } from './pages/input.js';
 import { buildNounPage } from './pages/noun.js';
+import { buildAuctionPage } from './pages/auction.js';
+import { buildAvatarInputPage, buildAvatarResultPage } from './pages/avatar.js';
 
 const app = new Hono();
 app.use('*', cors({ origin: '*' }));
@@ -36,6 +38,20 @@ registerSnapHandler(
   app,
   async (ctx) => {
     const baseUrl = getBaseUrl(ctx.request);
+
+    // Check for gallery navigation via ?id= query param
+    const url = new URL(ctx.request.url);
+    const idParam = url.searchParams.get('id');
+    if (idParam) {
+      const tokenId = parseInt(idParam, 10);
+      if (!isNaN(tokenId) && tokenId >= 0) {
+        const [owner, imageUrl] = await Promise.all([
+          getNounOwner(tokenId),
+          Promise.resolve(getNounImageUrl(tokenId)),
+        ]);
+        return buildNounPage(tokenId, owner, imageUrl, baseUrl);
+      }
+    }
 
     if (ctx.action.type === 'get') {
       const totalSupply = getTotalSupply();
@@ -77,6 +93,46 @@ registerSnapHandler(
     return buildNounPage(tokenId, owner, imageUrl, baseUrl);
   },
   { path: '/random', ...skipJFS },
+);
+
+// ── Live Auction ─────────────────────────────────────────
+
+registerSnapHandler(
+  app,
+  async (ctx) => {
+    const baseUrl = getBaseUrl(ctx.request);
+    const auction = await getCurrentAuction();
+    return buildAuctionPage(auction, baseUrl);
+  },
+  { path: '/auction', ...skipJFS },
+);
+
+// ── Avatar input ─────────────────────────────────────────
+
+registerSnapHandler(
+  app,
+  async (ctx) => {
+    const baseUrl = getBaseUrl(ctx.request);
+    return buildAvatarInputPage(baseUrl);
+  },
+  { path: '/avatar-input', ...skipJFS },
+);
+
+// ── Avatar result ────────────────────────────────────────
+
+registerSnapHandler(
+  app,
+  async (ctx) => {
+    const baseUrl = getBaseUrl(ctx.request);
+    if (ctx.action.type === 'get') {
+      return buildAvatarInputPage(baseUrl);
+    }
+    const name = (ctx.action.inputs?.avatarName as string) || 'anon';
+    const sanitized = name.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30) || 'anon';
+    const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(sanitized)}`;
+    return buildAvatarResultPage(sanitized, imageUrl, baseUrl);
+  },
+  { path: '/avatar', ...skipJFS },
 );
 
 export default app;

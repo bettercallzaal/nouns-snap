@@ -1,7 +1,55 @@
 import { shortenAddress } from '../utils.js';
 
+const MAX_NOUN_ID = 1868;
+
 export function buildNounPage(tokenId: number, owner: string, imageUrl: string, baseUrl: string) {
   const shortOwner = owner === 'Unknown' ? 'Unknown' : shortenAddress(owner);
+
+  // Build dynamic nav children (only include prev/next when in range)
+  const navChildren: string[] = [];
+  if (tokenId > 0) navChildren.push('prev_btn');
+  if (tokenId < MAX_NOUN_ID) navChildren.push('next_btn');
+
+  // Build elements object — conditionally include nav buttons
+  type ElementMap = Record<string, {
+    type: string;
+    props: Record<string, unknown>;
+    children?: string[];
+    on?: Record<string, unknown>;
+  }>;
+
+  const navElements: ElementMap = {};
+
+  if (tokenId > 0) {
+    navElements['prev_btn'] = {
+      type: 'button' as const,
+      props: { label: `#${tokenId - 1}`, icon: 'arrow-left' as const },
+      on: {
+        press: {
+          action: 'submit' as const,
+          params: { target: `${baseUrl}/noun?id=${tokenId - 1}` },
+        },
+      },
+    };
+  }
+
+  if (tokenId < MAX_NOUN_ID) {
+    navElements['next_btn'] = {
+      type: 'button' as const,
+      props: { label: `#${tokenId + 1}`, icon: 'arrow-right' as const },
+      on: {
+        press: {
+          action: 'submit' as const,
+          params: { target: `${baseUrl}/noun?id=${tokenId + 1}` },
+        },
+      },
+    };
+  }
+
+  // Determine page children — only include btn_nav if there are nav buttons to show
+  const pageChildren = navChildren.length > 0
+    ? ['image', 'info', 'owner_item', 'btn_nav', 'btn_row']
+    : ['image', 'info', 'owner_item', 'btn_row'];
 
   return {
     version: '1.0' as const,
@@ -12,7 +60,7 @@ export function buildNounPage(tokenId: number, owner: string, imageUrl: string, 
         page: {
           type: 'stack' as const,
           props: { direction: 'vertical' as const, gap: 'md' as const },
-          children: ['image', 'info', 'owner_item', 'btn_row'],
+          children: pageChildren,
         },
         image: {
           type: 'image' as const,
@@ -31,6 +79,16 @@ export function buildNounPage(tokenId: number, owner: string, imageUrl: string, 
           type: 'item' as const,
           props: { title: 'Owner', description: shortOwner },
         },
+        // Nav row (prev/next) — conditionally populated
+        ...(navChildren.length > 0 ? {
+          btn_nav: {
+            type: 'stack' as const,
+            props: { direction: 'horizontal' as const, gap: 'sm' as const },
+            children: navChildren,
+          },
+        } : {}),
+        // Spread nav button elements
+        ...navElements,
         btn_row: {
           type: 'stack' as const,
           props: { direction: 'horizontal' as const, gap: 'sm' as const },
