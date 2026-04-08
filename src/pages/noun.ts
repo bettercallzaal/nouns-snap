@@ -43,8 +43,8 @@ export function buildNounPage(tokenId: number, owner: string, imageUrl: string, 
             press: {
               action: 'compose_cast' as const,
               params: {
-                text: `Check out Noun #${tokenId}!`,
-                embeds: [baseUrl],
+                text: `I just looked up Noun #${tokenId} on Nouns Snap by @zaal`,
+                embeds: [baseUrl, `https://noun.pics/${tokenId}`],
               },
             },
           },
