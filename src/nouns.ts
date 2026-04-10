@@ -73,11 +73,31 @@ const client = createPublicClient({
   transport: http('https://eth.merkle.io', { timeout: 5_000 }),
 });
 
-// Hardcode supply - updates daily, no need to hit RPC on every page load
-const KNOWN_SUPPLY = 1869;
+// Dynamic supply with 1-hour cache
+let cachedSupply: number = 1869; // fallback
+let cacheTimestamp: number = 0;
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+export async function fetchTotalSupply(): Promise<number> {
+  const now = Date.now();
+  if (now - cacheTimestamp < CACHE_TTL) return cachedSupply;
+
+  try {
+    const supply = await client.readContract({
+      address: NOUNS.address,
+      abi: nounsAbi,
+      functionName: 'totalSupply',
+    });
+    cachedSupply = Number(supply);
+    cacheTimestamp = now;
+  } catch {
+    // keep stale cache on error
+  }
+  return cachedSupply;
+}
 
 export function getTotalSupply(): number {
-  return KNOWN_SUPPLY;
+  return cachedSupply;
 }
 
 export async function getNounOwner(tokenId: number): Promise<string> {

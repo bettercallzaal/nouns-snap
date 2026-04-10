@@ -46,10 +46,14 @@ export function buildNounPage(tokenId: number, owner: string, imageUrl: string, 
     };
   }
 
+  // Determine if owner has a valid address for etherscan link
+  const hasValidOwner = owner !== 'Unknown' && owner.startsWith('0x');
+
   // Determine page children — only include btn_nav if there are nav buttons to show
-  const pageChildren = navChildren.length > 0
-    ? ['image', 'info', 'owner_item', 'btn_nav', 'btn_row']
-    : ['image', 'info', 'owner_item', 'btn_row'];
+  const ownerChildren: string[] = hasValidOwner
+    ? ['image', 'info', 'owner_item', ...(navChildren.length > 0 ? ['btn_nav'] : []), 'btn_row']
+    : ['image', 'info', 'owner_item', ...(navChildren.length > 0 ? ['btn_nav'] : []), 'btn_row'];
+  const pageChildren = ownerChildren;
 
   return {
     version: '1.0' as const,
@@ -92,8 +96,20 @@ export function buildNounPage(tokenId: number, owner: string, imageUrl: string, 
         btn_row: {
           type: 'stack' as const,
           props: { direction: 'horizontal' as const, gap: 'sm' as const },
-          children: ['share_btn', 'view_btn', 'back_btn'],
+          children: [...(hasValidOwner ? ['view_owner_btn'] : []), 'share_btn', 'view_btn', 'back_btn'],
         },
+        ...(hasValidOwner ? {
+          view_owner_btn: {
+            type: 'button' as const,
+            props: { label: 'Owner', icon: 'external-link' as const },
+            on: {
+              press: {
+                action: 'open_url' as const,
+                params: { target: `https://etherscan.io/address/${owner}` },
+              },
+            },
+          },
+        } : {}),
         share_btn: {
           type: 'button' as const,
           props: { label: 'Share', icon: 'share' as const },

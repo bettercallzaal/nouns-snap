@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { registerSnapHandler } from '@farcaster/snap-hono';
-import { getTotalSupply, getNounOwner, getNounImageUrl, getCurrentAuction } from './nouns.js';
+import { getTotalSupply, fetchTotalSupply, getNounOwner, getNounImageUrl, getCurrentAuction } from './nouns.js';
 import { buildInputPage } from './pages/input.js';
 import { buildNounPage } from './pages/noun.js';
 import { buildAuctionPage } from './pages/auction.js';
@@ -28,7 +28,7 @@ function getBaseUrl(req: Request): string {
 
 registerSnapHandler(app, async (ctx) => {
   const baseUrl = getBaseUrl(ctx.request);
-  const totalSupply = getTotalSupply();
+  const totalSupply = await fetchTotalSupply();
   return buildInputPage(baseUrl, totalSupply);
 }, skipJFS);
 

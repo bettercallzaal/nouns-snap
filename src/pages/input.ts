@@ -50,7 +50,7 @@ export function buildInputPage(baseUrl: string, totalSupply: number) {
         btn_row_2: {
           type: 'stack' as const,
           props: { direction: 'horizontal' as const, gap: 'sm' as const },
-          children: ['auction_btn', 'avatar_btn', 'zounz_btn'],
+          children: ['auction_btn', 'avatar_btn', 'zounz_btn', 'share_btn'],
         },
         auction_btn: {
           type: 'button' as const,
@@ -79,6 +79,19 @@ export function buildInputPage(baseUrl: string, totalSupply: number) {
             press: {
               action: 'open_url' as const,
               params: { target: 'https://nouns.build/dao/base/0xCB80Ef04DA68667c9a4450013BDD69269842c883' },
+            },
+          },
+        },
+        share_btn: {
+          type: 'button' as const,
+          props: { label: 'Share', icon: 'share' as const },
+          on: {
+            press: {
+              action: 'compose_cast' as const,
+              params: {
+                text: 'Explore Nouns NFTs with Nouns Snap by @zaal',
+                embeds: [baseUrl],
+              },
             },
           },
         },

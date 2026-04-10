@@ -64,7 +64,7 @@ export function buildAuctionPage(auction: AuctionData, baseUrl: string) {
             press: {
               action: 'compose_cast' as const,
               params: {
-                text: `Noun #${auction.nounId} is up for auction! Current bid: ${auction.currentBid}`,
+                text: `Noun #${auction.nounId} is live on auction! ${auction.currentBid} with ${auction.timeRemaining}\n\nBid on nouns.wtf`,
                 embeds: [baseUrl],
               },
             },
